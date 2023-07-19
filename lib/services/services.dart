@@ -1,0 +1,1 @@
+export 'chat.service.dart';
