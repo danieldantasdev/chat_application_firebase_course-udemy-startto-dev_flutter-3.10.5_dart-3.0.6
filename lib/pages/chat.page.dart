@@ -1,4 +1,5 @@
 import 'package:chat/pages/pages.dart';
+import 'package:chat/services/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class _ChatPageState extends State<ChatPage> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
       GlobalKey<ScaffoldMessengerState>();
+  final UserService _userService = UserService();
 
   User? _currentUser;
   bool _isLoading = true;
@@ -35,39 +37,12 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  Future<User?> _getUser() async {
-    if (_currentUser != null) return _currentUser;
-
-    try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await googleSignIn.signIn();
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount!.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleSignInAuthentication.idToken,
-        accessToken: googleSignInAuthentication.accessToken,
-      );
-
-      final UserCredential authResult =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-
-      final User? user = authResult.user;
-      setState(() {
-        authResult.user;
-      });
-      return user;
-    } catch (error) {
-      return null;
-    }
-  }
-
   void _sendMessage({String? text, String? imgFile}) async {
     setState(() {
       _isLoading = true;
     });
 
-    final User? user = await _getUser();
+    final User? user = await _userService.signIn(_currentUser, googleSignIn);
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
