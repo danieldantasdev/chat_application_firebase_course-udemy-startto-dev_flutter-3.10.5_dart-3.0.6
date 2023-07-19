@@ -1,16 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/chat.dart';
 
 class ChatService {
   final CollectionReference _chatsCollection =
       FirebaseFirestore.instance.collection('chat');
-  final FirebaseFirestore _firestore;
 
-  ChatService() : _firestore = FirebaseFirestore.instance {
-    Firebase.initializeApp();
-  }
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> create({required Chat chat}) async {
     try {
@@ -29,6 +27,49 @@ class ChatService {
       });
       return chats;
     });
+  }
+
+  // Future<User?> signIn() async {
+  //   try {
+  //     final GoogleSignInAccount? googleSignInAccount =
+  //         await _googleSignIn.signIn();
+  //     final GoogleSignInAuthentication googleSignInAuthentication =
+  //         await googleSignInAccount!.authentication;
+  //     final AuthCredential authCredential = GoogleAuthProvider.credential(
+  //       idToken: googleSignInAuthentication.idToken,
+  //       accessToken: googleSignInAuthentication.accessToken,
+  //     );
+  //     final UserCredential userCredential =
+  //         await FirebaseAuth.instance.signInWithCredential(authCredential);
+  //     final User? user = userCredential.user;
+  //     return user;
+  //   } catch (error) {
+  //     print(error);
+  //   }
+  // }
+
+  Future<User?> signIn(User? user, GoogleSignIn googleSignIn) async {
+    if (user != null) return user;
+
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount!.authentication;
+
+      final AuthCredential authCredential = GoogleAuthProvider.credential(
+        idToken: googleSignInAuthentication.idToken,
+        accessToken: googleSignInAuthentication.accessToken,
+      );
+
+      final UserCredential authResult =
+          await FirebaseAuth.instance.signInWithCredential(authCredential);
+
+      final User? user = authResult.user;
+      return user;
+    } catch (error) {
+      return null;
+    }
   }
 
   Future<void> update(String id, String newMessage) async {

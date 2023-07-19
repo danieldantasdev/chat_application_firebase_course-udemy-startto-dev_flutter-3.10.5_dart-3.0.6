@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'pages/pages.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
-  Firebase.initializeApp();
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
         useMaterial3: true,
       ),
-      home: const HomePage(title: 'Flutter Demo Home Page'),
+      home: const ChatPage(title: 'Flutter Demo Home Page'),
     );
   }
 }
